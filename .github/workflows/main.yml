@@ -272,6 +272,7 @@ jobs:
               }
           }
           
+          @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
           @Composable
           fun VideoPlayerScreen(uri: Uri, onClose: () -> Unit) {
               val context = LocalContext.current
@@ -424,8 +425,5 @@ jobs:
         run: |
           mkdir temp_wrapper
           cd temp_wrapper
-          gradle wrapper --gradle-version 8.2
-          cd ..
-          cp -r temp_wrapper/gradle ZPlus2Video/
-          cp temp_wrapper/gradlew ZPlus2Video/
-          
+          echo "rootProject.name = 'temp'" > settings.gradle
+          gradle wrapp

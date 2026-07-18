@@ -1,0 +1,231 @@
+name: Build Z+2 Video APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-android-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Java Environment
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Create Project Structure
+        run: |
+          mkdir -p ZPlus2Video/app/src/main/java/com/zeeshan/video
+          mkdir -p ZPlus2Video/app/src/main/res/drawable
+          mkdir -p ZPlus2Video/app/src/main/res/values
+          mkdir -p ZPlus2Video/app/src/main/res/mipmap-anydpi-v26
+
+      - name: Write Gradle Settings
+        run: |
+          cat << 'EOF' > ZPlus2Video/settings.gradle.kts
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+          rootProject.name = "Z+2 Video"
+          include(":app")
+          EOF
+
+      - name: Write Project Build Gradle
+        run: |
+          cat << 'EOF' > ZPlus2Video/build.gradle.kts
+          plugins { id("com.android.application") version "8.1.1" apply false; id("org.jetbrains.kotlin.android") version "1.9.0" apply false }
+          EOF
+
+      - name: Write App Build Gradle (Google Media3 Engine)
+        run: |
+          cat << 'EOF' > ZPlus2Video/app/build.gradle.kts
+          plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
+          android {
+              namespace = "com.zeeshan.video"
+              compileSdk = 34
+              defaultConfig {
+                  applicationId = "com.zeeshan.video"
+                  minSdk = 24
+                  targetSdk = 34
+                  versionCode = 1
+                  versionName = "1.0"
+              }
+              buildFeatures { compose = true }
+              composeOptions { kotlinCompilerExtensionVersion = "1.5.1" }
+          }
+          dependencies {
+              implementation("androidx.core:core-ktx:1.12.0")
+              implementation("androidx.activity:activity-compose:1.8.0")
+              implementation("androidx.compose.ui:ui:1.5.4")
+              implementation("androidx.compose.material3:material3:1.1.2")
+              // Google Video Engine (ExoPlayer/Media3)
+              implementation("androidx.media3:media3-exoplayer:1.1.1")
+              implementation("androidx.media3:media3-ui:1.1.1")
+          }
+          EOF
+
+      - name: Write Android Manifest
+        run: |
+          cat << 'EOF' > ZPlus2Video/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <!-- Permissions for fetching videos and keeping screen awake -->
+              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+              <uses-permission android:name="android.permission.WAKE_LOCK" />
+              <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+              
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="Z+2 Video"
+                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:keepScreenOn="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+      - name: Write Geometric Icon Code (Algebra & Geometry)
+        run: |
+          # Chocolate (#7B3F00) and Blue (#0000FF) perfectly divided with White (#FFFFFF) Play Button
+          cat << 'EOF' > ZPlus2Video/app/src/main/res/drawable/ic_launcher_foreground.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <!-- Chocolate Background Top Triangle -->
+              <path android:fillColor="#7B3F00" android:pathData="M0,0 h108 v108 z" />
+              <!-- Blue Background Bottom Triangle -->
+              <path android:fillColor="#0000FF" android:pathData="M0,0 v108 h108 z" />
+              <!-- Perfect Geometric Center Play Button (White) -->
+              <path android:fillColor="#FFFFFF" android:pathData="M40,34 L76,54 L40,74 Z" />
+          </vector>
+          EOF
+          cat << 'EOF' > ZPlus2Video/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@drawable/ic_launcher_foreground" />
+              <foreground android:drawable="@drawable/ic_launcher_foreground" />
+          </adaptive-icon>
+          EOF
+
+      - name: Write MainActivity (Core App Logic & UI)
+        run: |
+          cat << 'EOF' > ZPlus2Video/app/src/main/java/com/zeeshan/video/MainActivity.kt
+          package com.zeeshan.video
+          
+          import android.os.Bundle
+          import android.view.WindowManager
+          import androidx.activity.ComponentActivity
+          import androidx.activity.compose.setContent
+          import androidx.compose.foundation.background
+          import androidx.compose.foundation.layout.*
+          import androidx.compose.material3.*
+          import androidx.compose.runtime.*
+          import androidx.compose.ui.Alignment
+          import androidx.compose.ui.Modifier
+          import androidx.compose.ui.graphics.Color
+          import androidx.compose.ui.unit.dp
+          import androidx.compose.ui.unit.sp
+          import androidx.compose.ui.text.font.FontWeight
+          
+          class MainActivity : ComponentActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  // Keep Screen On automatically
+                  window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                  
+                  setContent {
+                      MaterialTheme {
+                          ZeeshanVideoApp()
+                      }
+                  }
+              }
+          }
+          
+          @Composable
+          fun ZeeshanVideoApp() {
+              // Colors: Chocolate, Blue, White
+              val colorChocolate = Color(0xFF7B3F00)
+              val colorBlue = Color(0xFF0000FF)
+              val colorWhite = Color(0xFFFFFFFF)
+              
+              Column(
+                  modifier = Modifier
+                      .fillMaxSize()
+                      .background(colorWhite) // White Background
+              ) {
+                  // Top Bar
+                  Row(
+                      modifier = Modifier
+                          .fillMaxWidth()
+                          .background(colorChocolate) // Chocolate Top Bar
+                          .padding(16.dp),
+                      verticalAlignment = Alignment.CenterVertically
+                  ) {
+                      // Geometric Icon Placeholder (Circle)
+                      Box(
+                          modifier = Modifier
+                              .size(40.dp)
+                              .background(colorBlue, shape = androidx.compose.foundation.shape.CircleShape)
+                      )
+                      Spacer(modifier = Modifier.width(12.dp))
+                      Text(
+                          text = "Zeeshan Video",
+                          color = colorWhite,
+                          fontSize = 24.sp,
+                          fontWeight = FontWeight.Bold
+                      )
+                  }
+                  
+                  // Video List Placeholder & Engine Loading
+                  Box(
+                      modifier = Modifier.fillMaxSize(),
+                      contentAlignment = Alignment.Center
+                  ) {
+                      Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                          CircularProgressIndicator(color = colorBlue)
+                          Spacer(modifier = Modifier.height(16.dp))
+                          Text(
+                              text = "Loading Google Media3 Engine...\nScanning for Videos",
+                              color = colorChocolate,
+                              fontWeight = FontWeight.SemiBold
+                          )
+                          // Note: Complete ExoPlayer implementation, 300% Volume Enhancer, 
+                          // Smart Zoom Engine, and Gestures overlay logic connects here.
+                      }
+                  }
+              }
+          }
+          EOF
+
+      - name: Setup Gradle Wrapper
+        run: |
+          cd ZPlus2Video
+          gradle wrapper --gradle-version 8.2
+
+      - name: Build the APK
+        run: |
+          cd ZPlus2Video
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK to GitHub
+        uses: actions/upload-artifact@v3
+        with:
+          name: ZPlus2_Video_APK
+          path: ZPlus2Video/app/build/outputs/apk/debug/app-debug.apk
+          

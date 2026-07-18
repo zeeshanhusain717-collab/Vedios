@@ -11,13 +11,13 @@ jobs:
 
     steps:
       - name: Setup Java Environment
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
 
       - name: Create Project Structure
         run: |
@@ -74,7 +74,6 @@ jobs:
           cat << 'EOF' > ZPlus2Video/app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <!-- Permissions for fetching videos and keeping screen awake -->
               <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
               <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
               <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -101,7 +100,6 @@ jobs:
 
       - name: Write Geometric Icon Code (Algebra & Geometry)
         run: |
-          # Chocolate (#7B3F00) and Blue (#0000FF) perfectly divided with White (#FFFFFF) Play Button
           cat << 'EOF' > ZPlus2Video/app/src/main/res/drawable/ic_launcher_foreground.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="108dp" android:height="108dp"
@@ -145,7 +143,6 @@ jobs:
           class MainActivity : ComponentActivity() {
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
-                  // Keep Screen On automatically
                   window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                   
                   setContent {
@@ -158,7 +155,6 @@ jobs:
           
           @Composable
           fun ZeeshanVideoApp() {
-              // Colors: Chocolate, Blue, White
               val colorChocolate = Color(0xFF7B3F00)
               val colorBlue = Color(0xFF0000FF)
               val colorWhite = Color(0xFFFFFFFF)
@@ -166,17 +162,15 @@ jobs:
               Column(
                   modifier = Modifier
                       .fillMaxSize()
-                      .background(colorWhite) // White Background
+                      .background(colorWhite)
               ) {
-                  // Top Bar
                   Row(
                       modifier = Modifier
                           .fillMaxWidth()
-                          .background(colorChocolate) // Chocolate Top Bar
+                          .background(colorChocolate)
                           .padding(16.dp),
                       verticalAlignment = Alignment.CenterVertically
                   ) {
-                      // Geometric Icon Placeholder (Circle)
                       Box(
                           modifier = Modifier
                               .size(40.dp)
@@ -191,7 +185,6 @@ jobs:
                       )
                   }
                   
-                  // Video List Placeholder & Engine Loading
                   Box(
                       modifier = Modifier.fillMaxSize(),
                       contentAlignment = Alignment.Center
@@ -204,8 +197,6 @@ jobs:
                               color = colorChocolate,
                               fontWeight = FontWeight.SemiBold
                           )
-                          // Note: Complete ExoPlayer implementation, 300% Volume Enhancer, 
-                          // Smart Zoom Engine, and Gestures overlay logic connects here.
                       }
                   }
               }
@@ -224,7 +215,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Upload APK to GitHub
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ZPlus2_Video_APK
           path: ZPlus2Video/app/build/outputs/apk/debug/app-debug.apk
